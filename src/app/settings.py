@@ -28,7 +28,8 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://192.168.1.134:3000"
+    "http://192.168.1.134:3000",
+    "http://45.170.155.17"
 ]
 
 AUTH_USER_MODEL = 'customuser.CustomUser'
