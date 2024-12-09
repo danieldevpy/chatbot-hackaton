@@ -4,23 +4,26 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import google.generativeai as genai
 from channels.db import database_sync_to_async
 from datetime import datetime
+from app.helper.datastr import data_str
 
 @database_sync_to_async
 def get_user_by_phone_number(user_id):
     from customuser.models import CustomUser
-    user_json = CustomUser.objects.get(phone_number=str(user_id)[2:]).text()
+    user = CustomUser.objects.get(phone_number=str(user_id)[2:])
 
     return f"""
     Olá essa mensagem inicial é para te passar um contexto de como você deve responder!
     Você deve responder mensagens baseadas nos beneficios encontrado nessa mensagem, qualquer mensagem
     que fuja do contexto de beneficios que um funcionário de uma empresa possa ter, não poderá ser responida.
     Responda a primeira mensagem dizendo Ola (nome do funcionado) sou um assistente virtual da vale e estou aqui
-    para te ajudar a entender mais sobre os seus beneficios, e ai diga o nome dos beneficios disponvieis em forma de lista, mas depois responda apenas o que for perguntado, para simular uma conversa humana!
-    a descrição do beneficio costuma ter o faq, onde responde a maioria das dúvidas, em algum momento você
-    podera sugerir algumas dessas perguntas baseado no interesse do funcionario.
+    para te ajudar a entender mais sobre os seus beneficios, caso não conheça seus beneficios, eu posso te enviar a lista de beneficios.
+    Caso o funcionario peça a lista, Primeiro envie a lista de categorias dos beneficios em forma de lista, e deixe o funcionario aprofundar a conversa.
+    Mas depois responda apenas o que for perguntado, para simular uma conversa humana!
+    a descrição do beneficio costuma ter o faq, onde responde a maioria das dúvidas.
     abaixo estará todas informações com quem você deve conversar
     (dia de hoje: {datetime.now().strftime("%d/%m/%Y")})
-    {user_json}
+    {user.get_full_name()}
+    {data_str}
     """ 
 
 
@@ -97,8 +100,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Enviar resposta para o WebSocket
         await self.send(text_data=json.dumps({
-            "response": response,
-            "history": self.history
+            "response": response
         }))
 
     async def generate_response(self, prompt):
